@@ -1,0 +1,363 @@
+\documentclass[a4paper,12pt]{report}
+
+% ========================
+% Packages (Đã dọn dẹp trùng lặp)
+% ========================
+\usepackage[margin=1in]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{calc, arrows.meta, positioning, shapes.geometric, shadows}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{makecell}
+\usepackage{float}
+\usepackage{tocloft}
+\usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{enumitem}
+
+% TikZ Styles
+\tikzset{
+    block/.style={
+        rectangle, draw=blue!70, fill=blue!5, text width=2.2cm, 
+        align=center, rounded corners, minimum height=1.2cm, 
+        thick, drop shadow, font=\small\sffamily\bfseries
+    },
+    arrow/.style={-{Stealth[scale=1.2]}, line width=1pt, gray!80}
+}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+% Header / Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[R]{\thepage}
+
+% Code style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    numbers=left,
+    numbersep=5pt,
+    showstringspaces=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+% ========================
+% TITLE PAGE
+% ========================
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture, overlay]
+    \draw[line width=2pt]
+        ($(current page.south west)+(0.5in,0.5in)$)
+        rectangle
+        ($(current page.north east)-(0.5in,0.5in)$);
+\end{tikzpicture}
+
+\vspace*{0.5cm}
+\begin{center}
+    {\Large \textbf{UNIVERSITY OF SCIENCE AND TECHNOLOGY OF HANOI}}\\[0.3cm]
+    {\large \textbf{VIETNAM FRANCE UNIVERSITY}}\\[1cm]
+
+    % Đổi tên file ảnh thành logo_usth.png để tránh lỗi
+    \includegraphics[width=0.45\textwidth]{logo.png}\\[0.5cm]
+
+    \rule{\textwidth}{1.2pt}\\[0.5cm]
+    {\LARGE \textbf{BACHELOR THESIS}}\\[0.2cm]
+    \rule{\textwidth}{1.2pt}\\[1.5cm]
+
+    {\Huge \textbf{Automated Tea Bud Detection and Counting using YOLO and HSV Color Space Enhancement for RGB images and videos}}\\[1.5cm]
+\end{center}
+
+\vspace{1cm}
+\begin{center}
+    \begin{tabular}{ll}
+        \textbf{Student:} & \textbf{Doan Duy Thanh} \\
+        \textbf{Student ID:} & 22BA13286 \\
+        \textbf{Major:} & Data Science \\
+        \textbf{Intake:} & 2022--2026 \\
+        & \\
+        \textbf{Supervisor:} & \textbf{Assoc. Prof. Tong Si Son} \\
+    \end{tabular}
+\end{center}
+
+\vfill
+\begin{center}
+    {\large \textbf{HANOI, 2026}}
+\end{center}
+\clearpage
+
+% --- Table of Contents ---
+\tableofcontents
+\clearpage
+\listoffigures
+
+\clearpage
+\listoftables
+
+\clearpage
+
+
+% --- Abstract ---
+\chapter*{ABSTRACT}
+\addcontentsline{toc}{chapter}{ABSTRACT} % Thêm vào mục lục
+ 
+
+\clearpage
+
+% --- Acknowledgements ---
+\chapter*{ACKNOWLEDGEMENTS}
+\addcontentsline{toc}{chapter}{ACKNOWLEDGEMENTS} % Thêm vào mục lục
+I would like to express my profound gratitude and sincerest thanks to my supervisor, \textbf{Assoc. Prof. Tong Si Son}, for his invaluable guidance, continuous encouragement, and insightful feedback throughout the duration of this research. His expertise and dedication have been instrumental in the successful completion of this thesis.
+
+I would also like to extend my special thanks to \textbf{MSc. Hoang Long} for his generous support, technical assistance, and the practical insights he shared, which greatly contributed to the progress of my work.
+
+Furthermore, I am deeply grateful to the \textbf{University of Science and Technology of Hanoi (USTH)} for providing me with a professional academic environment and the necessary facilities to pursue my studies.
+
+Lastly, I want to thank my family and friends for their unwavering love, patience, and encouragement. They have been a constant source of strength and inspiration during my academic journey.
+
+
+\clearpage
+
+% ========================
+% Chapters
+% ========================
+\chapter{Introduction}
+\section{Motivation and Research Background}
+Tea(Camellia sinensis) is a beverage made by steeping the leaves and buds of the tea plant~\cite{BritannicaTea},the tea plant originated in China, spreading to countries like India and Japan in the early 7th century, and becoming an important industrial crop in Asia~\cite{TravinaTea}.According to the Vietnam Tea Association~\cite{VITAS2025}, in May 2025, Vietnam was the 5th largest tea exporter in the world, exporting over 11,000 tons of tea and earning nearly 18.6 million USD, an increase of 22\% \text{ in volume and } 26\% \text{ in value compared to the previous month.}
+The quality of tea ~\cite{AgritradeTea} depends directly on the timing and method of harvesting the buds, as proper harvesting helps regulate growth, increase yield, and preserve nutrients.
+
+
+According to  John Richard~\cite{TeaHeeBuds}, tea buds are the unopened, tender leaf buds of the tea plant that are plucked before they are fully unfurl. 
+They are harvested before they fully open, and are often referred to as "1 bud 2 leaves" or "1 bud 1 leaf". Two young leaves~\cite{TwoLeavesSymbol},these leaves are tender, full of flavor, and have the right nutritional balance.
+
+One bud,the bud, also known as the "top," is the developing part of the plant. It contains concentrated flavor, essential oils, and a large amount of antioxidants. The difference between "1 bud, 2 leaves" and "1 bud, 1 leaf" is that "1 bud, 1 leaf" ~\cite{ILOTATea} refers to a harvesting method that includes one unopened bud (the shrimp) and only one young leaf immediately following it.
+
+Manual tea picking and counting~\cite{VietGAPTea}, relying on the picker's experience, can lead to technical errors and a lack of quantitative harvest data. Manual tea picking is labor-intensive, time-consuming, and costly, accounting for nearly 35\% of total production costs worldwide ~\cite{ArogyaTea}.
+
+Nowadays, the application of deep learning and artificial intelligence has become widespread. Works such as SD-YOLOv8 by X. Zhang, \cite{Zhang2025} use Segment Anything Model (SAM) combined with Heterogeneous Feature Extractor (HFE) to clearly distinguish the foreground of tea buds, achieving 86.0\% mAP, 5\% higher than the original YOLOv8; while 3D localization based on YOLOv5s + Point Cloud \cite{Zhu2023} improved with ECANet, BiFPN and DBSCAN/PCA on a RealSense D435 camera, achieved 94.4\% accuracy with an error of 3--7 mm. 
+
+Practical YOLOv5 \cite{Li2024} optimizes SimSPPF and ODConv for mountainous tea hills, the lightweight 14.9 MB model handles focus blurring and occlusion; Tea-YOLOv8s \cite{Xie2023} enhanced gamma, DCNv2, and GAM data to achieve mAP 88.27\% inference in just 37.1 ms.
+
+In USTH, according to Associate Professor Tong Si Son ~\cite{USTHUAV2026}, he proposed the idea of using unmanned aerial vehicles (UAVs) and artificial intelligence to increase tea productivity and quality, opening a new direction for the tea revolution in Vietnam.
+
+By Wang ~\cite{Wang2024}, small tea buds resembling mature leaves are difficult to distinguish by color; high density leads to occlusion, changing viewing angles, and wind movement requires robust tracking. Varying outdoor light conditions necessitate pre-treatment.
+
+To overcome these limitations, this project aims to explore and apply several advanced deep learning-based segmentation methods. These methods will be trained directly on real tea buds, allowing them to accurately segment tea buds from color digital images captured with inexpensive cameras. By leveraging the capabilities of advanced deep learning techniques, this project seeks to develop a more robust and reliable solution for rice grain segmentation than previous methods.
+
+
+
+
+
+
+
+
+
+
+
+\section{Objectives}
+The primary objectives of this research are defined as follows:
+
+\begin{itemize}
+    \item \textbf{Feature Enhancement:} : Research and implement advanced image preprocessing and data enhancement techniques
+    
+    \item \textbf{Architectural Optimization:} Develop and apply modern deep learning architectures such as YOLO models.
+    
+    \item \textbf{Trait Quantification and Localization:} Provide accurate methods for estimating the characteristics of tea buds.
+\end{itemize}
+
+
+
+
+
+\section{Thesis Structure}
+
+\chapter{Materials}
+The dataset used consists of tea leaf images taken in Tam Nong commune, Phu Tho district, provided by Space Lab at USTH in 2025. All images were captured with an iPhone X camera at a resolution of 1125 x 2436 pixels, and approximately 936 images were collected from various angles.  The photos are generally wide and comprehensive, with some containing 40x40 squares to support actual measurement data.
+In order to obtain tea bud images in a more realistic and high-quality way,
+the data collection was conducted outdoors in a sunny environment. Some of the collected tea bud images are shown
+in Figure~\ref{fig:tea_samples}. 
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4095.jpg}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4104.jpg}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4266.jpg}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4407.jpg}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4282.jpg}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4415.jpg}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4500.jpg}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[width=\textwidth]{IMG_4116.jpg}
+    \end{subfigure}
+    \caption{Tea samples were collected in Tam Nong.}
+    \label{fig:tea_samples}
+\end{figure}
+
+Young tea buds and leaves are often affected by light. According to Shuang Xie, using data enhancement methods involving optical and geometric transformations helps to diversify the input data~\cite{Xie2023}.
+
+
+
+A total of 9 techniques have been applied to diversify the data.
+
+
+\begin{itemize}
+    \item Brightness Increase
+    \item Histogram Equalization (HEQ)
+    \item Gamma Transform
+    \item Homomorphic Filtering
+    \item Gaussian Blur
+    \item Gaussian Noise
+    \item Horizontal Flip
+    \item Vertical Flip
+    \item Rotation (5°, 10°, 15°, 90°, 180°)
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+\chapter{Methods}
+\chapter{Experiments and Results}
+\chapter{Conclusion and Future Work}
+\begin{thebibliography}{9}
+\bibitem{AgritradeTea}
+Agricultural Trade Promotion Center (Agritrade), 
+``Technical Procedure for Tea Harvesting,'' 
+\textit{Agritrade.gov.vn}, 
+2024. [Online]. Available: https://agritrade.gov.vn. [Accessed: May 6, 2026].
+
+\bibitem{ArogyaTea}
+Arogya Blog, 
+``Tea 201: What Makes a Tea Unique?,'' 
+\textit{Arogya.net}, 
+2026. [Online]. Available: https://blog.arogya.net/tea-201-what-makes-a-tea-unique/. [Accessed: May 6, 2026].
+
+\bibitem{BritannicaTea}
+The Editors of Encyclopaedia Britannica,
+``Tea | Definition, Types, \& History,'' 
+\textit{Encyclopedia Britannica}, 
+2026. [Online]. Available: https://www.britannica.com/topic/tea-beverage. [Accessed: May 5, 2026].
+
+\bibitem{ILOTATea}
+ILOTA Coffee \& Tea Factory, 
+``What do 'one bud, one leaf' and 'one bud, two leaves' mean? – Decoding the 'Secret Language' of Tea Connoisseurs,'' 
+\textit{Ilota.vn}, 
+2024. [Online]. Available: https://ilota.vn. [Accessed: May 6, 2026].
+
+\bibitem{Li2024}
+H. Li, M. Kong, and Y. Shi, 
+``Tea Bud Detection Model in a Real Picking Environment Based on an Improved YOLOv5,'' 
+\textit{Biomimetics}, vol. 9, no. 692, 2024.
+
+\bibitem{TeaHeeBuds}
+Tea Hee Shop UK, 
+``What Are Tea Buds?,'' 
+\textit{TeaHeeShop.com}, 
+2024. [Online]. Available: https://teaheeshop.com. [Accessed: May 6, 2026].
+
+\bibitem{TravinaTea}
+Tam Tra Viet Cooperative (TRAVINA),
+``History of Tea Plants: Development Across Many Countries,'' 
+\textit{Travina.vn}, 
+2026. [Online]. Available: https://travina.vn/lich-su-cay-che-phat-trien-qua-nhieu-quoc-gia/. [Accessed: May 6, 2026].
+
+\bibitem{TwoLeavesSymbol}
+Tea Industry Insights, 
+``The Story Behind the Symbol: Understanding the Significance of Two Leaves and a Bud,'' 
+\textit{GlobalTeaHub.com}, 
+2024. [Online]. Available: https://globalteahub.com. [Accessed: May 6, 2026].
+
+\bibitem{USTHUAV2026}
+University of Science and Technology of Hanoi (USTH), 
+``Utilizing UAVs paves the way for precision tea farming in Vietnam,'' 
+\textit{Usth.edu.vn}, 
+2026. [Online]. Available: https://usth.edu.vn/ung-dung-uav-mo-loi-cho-nong-nghiep-che-chinh-xac-tai-viet-nam-28169/. [Accessed: May 6, 2026].
+
+\bibitem{VietGAPTea}
+Vietnam GAP Joint Stock Company, 
+``Tea Harvesting Techniques,'' 
+\textit{Vietgap.com.vn}, 
+2026. [Online]. Available: https://vietgap.com.vn/ky-thuat-hai-che. [Accessed: May 6, 2026].
+
+\bibitem{VITAS2025}
+Vietnam Tea Association (VITAS), 
+``Vietnam's Tea Export Performance in May 2025,'' 
+\textit{Industry Report}, 
+2025. [Online]. Available: http://vitas.org.vn. [Accessed: May 6, 2026].
+
+\bibitem{Wang2024}
+Y. Wang, J. Lu, Q. Wang, and Z. Gao, 
+``A method of identification and localization of tea buds based on lightweight improved YOLOv5,'' 
+\textit{Front. Plant Sci.}, vol. 15, Art. no. 1488185, 2024. doi: 10.3389/fpls.2024.1488185.
+
+\bibitem{Xie2023}
+S. Xie and H. Sun, 
+``Tea-YOLOv8s: A Tea Bud Detection Model Based on Deep Learning and Computer Vision,'' 
+\textit{Sensors}, vol. 23, no. 6576, 2023.
+
+\bibitem{Zhang2025}
+X. Zhang, D. Wu, and F. Xu, 
+``SD-YOLOv8: SAM-Assisted Dual-Branch YOLOv8 Model for Tea Bud Detection on Optical Images,'' 
+\textit{Agriculture}, vol. 15, no. 712, 2025.
+
+\bibitem{Zhu2023}
+L. Zhu, Z. Zhang, G. Lin, P. Chen, X. Li, and S. Zhang, 
+``Detection and Localization of Tea Bud Based on Improved YOLOv5s and 3D Point Cloud Processing,'' 
+\textit{Agronomy}, vol. 13, no. 2412, 2023.
+
+
+
+
+
+
+\end{thebibliography}
+
+\end{document}
